@@ -1,0 +1,6 @@
+[submodule "token"]
+	path = token
+	url = https://github.com/henriquesalex/token.git
+[submodule "user"]
+	path = user
+	url = https://github.com/henriquesalex/user.git

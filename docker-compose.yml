@@ -1,0 +1,66 @@
+version: "3"
+services:
+  postgres:
+    image: postgres:latest
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=master123
+      - POSTGRES_DB=postgres
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    networks:
+      - backend
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    volumes:
+      - rabbit_data:/var/lib/rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - backend
+
+  user-service:
+    build:
+      context: ./user
+      dockerfile: Dockerfile
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgres://admin:master123@postgres:5432/postgres
+      - RABBITMQ_URL=amqp://rabbitmq
+    depends_on:
+      - postgres
+      - rabbitmq
+    networks:
+      - backend
+
+  token-service:
+    build:
+      context: ./token
+      dockerfile: Dockerfile
+    ports:
+      - "3002:3000"
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgres://admin:master123@postgres:5432/postgres
+      - RABBITMQ_URL=amqp://rabbitmq
+    depends_on:
+      - postgres
+      - rabbitmq
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
+
+volumes:
+  pg_data:
+    driver: local
+  rabbit_data:
+    driver: local
